@@ -111,11 +111,12 @@ namespace ariel
 
     Graph &Graph::operator=(const Graph &other)
     {
-        if (this == &other)
-        {
-            return *this;
-        }
-        *this = Graph(other);
+        this->loadGraph(other.graph);
+        // if (this == &other)
+        // {
+        //     return *this;
+        // }
+        // *this = Graph(other);
         return *this;
     }
 
@@ -337,7 +338,7 @@ namespace ariel
     {
         if (this->graph.size() != other.graph.size() || this->graph.at(0).size() != other.graph.at(0).size())
         {
-            throw invalid_argument("The graphs must have the same size.");
+            throw invalid_argument("The number of columns in the first matrix must be equal to the number of rows in the second matrix.");
         }
 
         size_t graph_size = this->graph.size(); // For optimization - so that we don't have to call this->graph.size() multiple times.
