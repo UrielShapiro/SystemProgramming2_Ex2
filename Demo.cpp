@@ -10,13 +10,12 @@ using ariel::Algorithms;
 #include <iostream>
 #include <stdexcept>
 #include <vector>
-using namespace std;
 
 int main()
 {
     ariel::Graph g1;
     // 3x3 matrix that represents a connected graph.
-    vector<vector<int>> graph = {
+    std::vector<std::vector<int>> graph = {
         {0, 1, 0},
         {1, 0, 1},
         {0, 1, 0}};
@@ -25,7 +24,7 @@ int main()
     cout<<g1; // Should print the matrix of the graph: [0, 1, 0], [1, 0, 1], [0, 1, 0]
 
     // 3x3 matrix that represents a weighted connected graph.
-    vector<vector<int>> weightedGraph = {
+    std::vector<std::vector<int>> weightedGraph = {
         {0, 1, 1},
         {1, 0, 2},
         {1, 2, 0}};

@@ -5,397 +5,539 @@
 #include "Graph.hpp"
 using namespace ariel;
 
-size_t Graph::size() const
+namespace ariel
 {
-    return this->graph.size();
-}
-int Graph::get_edge(const size_t i, const size_t j) const
-{
-    return this->graph.at(i).at(j);
-}
-std::vector<int> Graph::at(const size_t i) const
-{
-    return this->graph.at(i);
-}
-bool Graph::isDirectedGraph() const
-{
-    return this->isDirected;
-}
-bool Graph::isContainsNegativeEdge() const
-{
-    return this->containsNegativeEdge;
-}
-
-ariel::Graph::Graph() : isDirected(false), containsNegativeEdge(false), graph(std::vector<std::vector<int>>()) {}
-
-ariel::Graph::Graph(const std::vector<std::vector<int>> g) : isDirected(false), containsNegativeEdge(false)
-{
-    loadGraph(g);
-}
-
-/*
- * This function creates an undirected graph from a directed graph.
- * The function creates a new graph with the same vertices as the original graph.
- * The function then copies the edges from the original graph to the new graph.
- * The function then copies the edges from the original graph to the new graph in reverse order.
- * The function then sets the new graph as undirected.
- * The function returns the new undirected graph.
- */
-Graph ariel::Graph::MakeUndirectedGraph(Graph g)
-{
-    Graph undirectedGraph;
-    std::vector<std::vector<int>> newGraph(g.graph);
-    undirectedGraph.loadGraph(newGraph); // Load the original graph to the new graph.
-    for (size_t i = 0; i < g.size(); i++)
+    size_t NumOfVertices(const Graph &g)
     {
-        for (size_t j = 0; j < g.size(); j++)
+        return g.size();
+    }
+
+    std::vector<int> Graph::at(const size_t i) const
+    {
+        return this->graph.at(i);
+    }
+
+    ariel::Graph::Graph() : _edges(0), isDirected(false), containsNegativeEdge(false), graph(std::vector<std::vector<int>>()) {}
+
+    ariel::Graph::Graph(const std::vector<std::vector<int>> g) : isDirected(false), containsNegativeEdge(false), _edges(0)
+    {
+        loadGraph(g);
+    }
+
+    ariel::Graph::Graph(const Graph &other) : isDirected(other.isDirected), containsNegativeEdge(other.containsNegativeEdge), _edges(0)
+    {
+        Graph(other.graph);
+    }
+
+    Graph ariel::Graph::MakeUndirectedGraph(Graph g)
+    {
+        Graph undirectedGraph;
+        std::vector<std::vector<int>> newGraph(g.graph);
+        undirectedGraph.loadGraph(newGraph); // Load the original graph to the new graph.
+        undirectedGraph._edges = 0;          // Reset the number of edges becuase we will recalculate it.
+        for (size_t i = 0; i < g.size(); i++)
         {
-            if (g.graph.at(i).at(j) != 0)
+            for (size_t j = 0; j < g.size(); j++)
             {
-                undirectedGraph.graph.at(j).at(i) = g.graph.at(i).at(j); // Copy g[i][j] to undirectedGraph[j][i].
+                if (g.graph.at(i).at(j) != 0)
+                {
+                    undirectedGraph.graph.at(j).at(i) = g.graph.at(i).at(j); // Copy g[i][j] to undirectedGraph[j][i].
+                    undirectedGraph._edges++;
+                }
             }
         }
+        undirectedGraph.isDirected = false; // Set the new graph as undirected.
+        return undirectedGraph;
     }
-    undirectedGraph.isDirected = false; // Set the new graph as undirected.
-    return undirectedGraph;
-}
 
-/*
- * This function loads a graph from a given matrix.
- * The function checks if the matrix is empty.
- * The function checks if the matrix is a square matrix.
- * The function checks if the matrix is symmetric - if it is, the graph is undirected.
- * The function checks if the matrix contains negative edges.
- * The function checks if the distance from a vertex to itself isn't 0.
- */
-void ariel::Graph::loadGraph(const std::vector<std::vector<int>> g)
-{
-    if (g.size() == 0)
+    void ariel::Graph::loadGraph(const std::vector<std::vector<int>> g)
     {
-        throw invalid_argument("Invalid graph: The graph is empty.");
-    }
-    if (g.size() != g.at(0).size()) // Check if the matrix is a square matrix.
-    {
-        throw invalid_argument("Invalid graph: The graph is not a square matrix.");
-    }
-    this->graph.clear(); // Clear the graph, if it was already initialized.
-    std::vector<int> row;
-    for (size_t i = 0; i < g.size(); i++)
-    {
-        for (size_t j = 0; j < g.size(); j++)
+        if (g.size() == 0)
         {
-            row.push_back(g.at(i).at(j)); // Copy the row from the matrix to the graph.
-            if (g.at(i).at(j) != g.at(j).at(i))
+            throw invalid_argument("Invalid graph: The graph is empty.");
+        }
+        if (g.size() != g.at(0).size()) // Check if the matrix is a square matrix.
+        {
+            throw invalid_argument("Invalid graph: The graph is not a square matrix.");
+        }
+        this->graph.clear(); // Clear the graph, if it was already initialized.
+        std::vector<int> row;
+        for (size_t i = 0; i < g.size(); i++)
+        {
+            for (size_t j = 0; j < g.size(); j++)
             {
-                this->isDirected = true; // If the matrix is not symmetric, the graph is directed.
+                row.push_back(g.at(i).at(j)); // Copy the row from the matrix to the graph.
+                if (g.at(i).at(j) != g.at(j).at(i))
+                {
+                    this->isDirected = true; // If the matrix is not symmetric, the graph is directed.
+                }
+                if (g.at(i).at(j) < 0) // If the matrix contains negative edge, we will mark this graph as containing negative edges.
+                {
+                    this->containsNegativeEdge = true;
+                }
+                if (g.at(i).at(j) != 0)
+                {
+                    this->_edges++;
+                }
             }
-            if (g.at(i).at(j) < 0) // If the matrix contains negative edge, we will mark this graph as containing negative edges.
+            if (row.at(i) != 0) // Check if the distance from a vertex to itself isn't 0.
             {
-                this->containsNegativeEdge = true;
+                throw invalid_argument("Invalid graph: The distance from a vertex to itself must be 0.");
+            }
+            this->graph.push_back(row);
+            row.clear(); // Clear the row, for the next iteration.
+        }
+    }
+
+    void ariel::Graph::printGraph()
+    {
+        int edges = 0;
+        for (size_t i = 0; i < this->graph.size(); i++)
+        {
+            for (size_t j = 0; j < this->graph.size(); j++)
+            {
+                cout << this->graph.at(i).at(j) << "\t";
+                if (this->graph.at(i).at(j) != 0)
+                {
+                    edges++;
+                }
+            }
+            cout << endl;
+        }
+        cout << "Graph with " << this->graph.size() << " vertices and " << edges << " edges." << endl;
+    }
+
+    ///////////////////////////////////////////////////////////OPERATOR OVERLOADING/////////////////////////////////////////////////////
+
+    Graph &Graph::operator=(const Graph &other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+        *this = Graph(other);
+        return *this;
+    }
+
+    /**
+     * Equality/inequality operators:
+     */
+    bool Graph::operator==(const Graph &other) const
+    {
+        bool condition1 = this->containsNegativeEdge == other.containsNegativeEdge ||
+                          this->NumOfVertices() == other.NumOfVertices();
+
+        // Check if the weight of each edge is the same.
+        for (size_t i = 0; i < this->graph.size(); i++)
+        {
+            for (size_t j = 0; j < this->graph.at(i).size(); j++)
+            {
+                if (this->graph.at(i).at(j) != other.graph.at(i).at(j))
+                {
+                    return condition1 = false;
+                }
             }
         }
-        if (row.at(i) != 0) // Check if the distance from a vertex to itself isn't 0.
-        {
-            throw invalid_argument("Invalid graph: The distance from a vertex to itself must be 0.");
-        }
-        this->graph.push_back(row);
-        row.clear(); // Clear the row, for the next iteration.
-    }
-}
 
-/*
- * The function prints the graph as a matrix.
- * The function counts the number of edges in the graph.
- * The function prints the number of vertices and edges in the graph.
- */
-void ariel::Graph::printGraph()
-{
-    int edges = 0;
-    for (size_t i = 0; i < this->graph.size(); i++)
+        bool condition2 = *this <= other && *this >= other;
+
+        return condition1 || condition2;
+    }
+
+    bool Graph::operator!=(const Graph &other) const
     {
-        for (size_t j = 0; j < this->graph.size(); j++)
-        {
-            cout << this->graph.at(i).at(j) << "\t";
-            if (this->graph.at(i).at(j) != 0)
-            {
-                edges++;
-            }
-        }
-        cout << endl;
+        // if (this->isDirected != other.isDirected || this->containsNegativeEdge != other.containsNegativeEdge || this->graph.size() != other.graph.size())
+        // {
+        //     return true;
+        // }
+
+        // for (size_t i = 0; i < this->graph.size(); i++)
+        // {
+        //     for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        //     {
+        //         if (this->graph.at(i).at(j) != other.graph.at(i).at(j))
+        //         {
+        //             return true;
+        //         }
+        //     }
+        // }
+        return !(*this == other);
     }
-    cout << "Graph with " << this->graph.size() << " vertices and " << edges << " edges." << endl;
-}
 
-////////////OPERATOR OVERKOADING////////////
+    /**
+     * Unary Operations:
+     */
 
-Graph &Graph::operator=(const Graph &other)
-{
-    if (this == &other)
+    Graph Graph::operator+() const
     {
         return *this;
     }
 
-    this->graph = other.graph;
-    this->isDirected = other.isDirected;
-    this->containsNegativeEdge = other.containsNegativeEdge;
-
-    return *this;
-}
-
-// Overload the equality operator
-bool Graph::operator==(const Graph &other) const
-{
-    // TODO: IMPLEMENT
-    //  if (this->isDirected != other.isDirected || this->containsNegativeEdge != other.containsNegativeEdge || this->graph.size() != other.graph.size())
-    //  {
-    //      return false;
-    //  }
-    //  for (size_t i = 0; i < this->graph.size(); i++)
-    //  {
-    //      for (size_t j = 0; j < this->graph.at(i).size(); j++)
-    //      {
-    //          if (this->graph.at(i).at(j) != other.graph.at(i).at(j))
-    //          {
-    //              return false;
-    //          }
-    //      }
-    //  }
-    return true;
-}
-
-// Overload the inequality operator
-bool Graph::operator!=(const Graph &other) const
-{
-    if (this->isDirected != other.isDirected || this->containsNegativeEdge != other.containsNegativeEdge || this->graph.size() != other.graph.size())
+    Graph Graph::operator-() const
     {
-        return true;
+        // std::vector<std::vector<int>> newGraph;
+        // for (size_t i = 0; i < this->graph.size(); i++)
+        // {
+        //     std::vector<int> row;
+        //     for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        //     {
+        //         row.push_back(-(this->graph.at(i).at(j)));
+        //     }
+        //     newGraph.push_back(row);
+        //     row.clear();
+        // }
+        // return Graph(newGraph);
+        return *this * (-1);
     }
-
-    for (size_t i = 0; i < this->graph.size(); i++)
+    // Prefix increment operator.
+    Graph &Graph::operator++()
     {
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        for (size_t i = 0; i < this->graph.size(); i++)
         {
-            if (this->graph.at(i).at(j) != other.graph.at(i).at(j))
+            for (size_t j = 0; j < this->graph.at(i).size(); j++)
             {
-                return true;
+                if (this->graph.at(i).at(j) != 0)
+                {
+                    ++(this->graph.at(i).at(j));
+                }
             }
         }
+        return *this;
     }
-    return false;
-}
 
-Graph Graph::operator+()
-{
-    return *this;
-}
-
-Graph Graph::operator-()
-{
-    std::vector<std::vector<int>> newGraph;
-    for (size_t i = 0; i < this->graph.size(); i++)
+    // Postfix increment operator.
+    Graph Graph::operator++(int)
     {
-        std::vector<int> row;
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        Graph temp(*this);
+        ++(*this);
+        return temp;
+    }
+
+    // Prefix decrement operator.
+    Graph &Graph::operator--()
+    {
+        for (size_t i = 0; i < this->graph.size(); i++)
         {
-            row.push_back(-(this->graph.at(i).at(j)));
-        }
-        newGraph.push_back(row);
-        row.clear();
-    }
-    return Graph(newGraph);
-}
-
-Graph Graph::operator+(const ariel::Graph &other)
-{
-    if (this->graph.size() != other.graph.size())
-    {
-        throw invalid_argument("The graphs must have the same size.");
-    }
-    std::vector<std::vector<int>> newGraph;
-    for (size_t i = 0; i < this->graph.size(); i++)
-    {
-        std::vector<int> row;
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        {
-            row.push_back(this->graph.at(i).at(j) + other.graph.at(i).at(j));
-        }
-        newGraph.push_back(row);
-        row.clear();
-    }
-    return Graph(newGraph);
-}
-
-Graph Graph::operator-(const Graph &other)
-{
-    if (this->graph.size() != other.graph.size())
-    {
-        throw invalid_argument("The graphs must have the same size.");
-    }
-    std::vector<std::vector<int>> newGraph;
-    for (size_t i = 0; i < this->graph.size(); i++)
-    {
-        std::vector<int> row;
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        {
-            row.push_back(this->graph.at(i).at(j) - other.graph.at(i).at(j));
-        }
-        newGraph.push_back(row);
-        row.clear();
-    }
-    return Graph(newGraph);
-}
-
-Graph Graph::operator*(const int &scalar)
-{
-    std::vector<std::vector<int>> newGraph;
-    for (size_t i = 0; i < this->graph.size(); i++)
-    {
-        std::vector<int> row;
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        {
-            row.push_back(this->graph.at(i).at(j) * scalar);
-        }
-        newGraph.push_back(row);
-        row.clear();
-    }
-    return Graph(newGraph);
-}
-
-Graph Graph::operator/(const int &scalar)
-{
-    std::vector<std::vector<int>> newGraph;
-    for (size_t i = 0; i < this->graph.size(); i++)
-    {
-        std::vector<int> row;
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        {
-            row.push_back(this->graph.at(i).at(j) / scalar);
-        }
-        newGraph.push_back(row);
-        row.clear();
-    }
-    return Graph(newGraph);
-}
-
-Graph Graph::operator*(const Graph &other)
-{
-    if (this->graph.size() != other.graph.size() || this->graph.at(0).size() != other.graph.at(0).size())
-    {
-        throw invalid_argument("The graphs must have the same size.");
-    }
-    std::vector<std::vector<int>> newGraph(vector<vector<int>>(this->graph));
-    for (int i = 0; i < this->graph.size(); i++)
-    {
-        newGraph[i].assign(this->graph.size(), 0);
-    }
-    for (size_t i = 0; i < this->graph.size(); i++)
-    {
-        std::vector<int> row;
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        {
-            newGraph[i][j] += this->graph.at(i).at(j) * other.graph.at(j).at(i);
-        }
-    }
-    return Graph(newGraph);
-}
-
-/*
- * Prefix increment operator.
- */
-Graph &Graph::operator++()
-{
-    for (size_t i = 0; i < this->graph.size(); i++)
-    {
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        {
-            if (this->graph.at(i).at(j) != 0)
+            for (size_t j = 0; j < this->graph.at(i).size(); j++)
             {
-                ++(this->graph.at(i).at(j));
+                if (this->graph.at(i).at(j) != 0)
+                {
+                    --(this->graph.at(i).at(j));
+                }
             }
         }
+        return *this;
     }
-    return *this;
-}
 
-/*
- * Postfix increment operator.
- */
-Graph &Graph::operator++(int)
-{
-    Graph temp(*this);
-    ++(*this);
-    return temp;
-}
-/*
- * Prefix decrement operator.
- */
-Graph &Graph::operator--()
-{
-    for (size_t i = 0; i < this->graph.size(); i++)
+    // Postfix decrement operator.
+    Graph Graph::operator--(int)
     {
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        Graph temp(*this);
+        --(*this);
+        return temp;
+    }
+
+    /**
+     * Binary Operations:
+     */
+    Graph Graph::operator+(const ariel::Graph &other) const
+    {
+        if (this->graph.size() != other.graph.size())
         {
-            if (this->graph.at(i).at(j) != 0)
+            throw invalid_argument("The graphs must have the same size.");
+        }
+        std::vector<std::vector<int>> new_adj_matrix;
+        for (size_t i = 0; i < this->graph.size(); i++)
+        {
+            std::vector<int> row;
+            for (size_t j = 0; j < this->graph.at(i).size(); j++)
             {
-                --(this->graph.at(i).at(j));
+                row.push_back(this->graph.at(i).at(j) + other.graph.at(i).at(j));
+            }
+            new_adj_matrix.push_back(row);
+            row.clear();
+        }
+        return Graph(new_adj_matrix);
+    }
+
+    Graph Graph::operator-(const Graph &other) const
+    {
+        if (this->graph.size() != other.graph.size())
+        {
+            throw invalid_argument("The graphs must have the same size.");
+        }
+        std::vector<std::vector<int>> new_adj_matrix;
+        for (size_t i = 0; i < this->graph.size(); i++)
+        {
+            std::vector<int> row;
+            for (size_t j = 0; j < this->graph.at(i).size(); j++)
+            {
+                row.push_back(this->graph.at(i).at(j) - other.graph.at(i).at(j));
+            }
+            new_adj_matrix.push_back(row);
+            row.clear();
+        }
+        return Graph(new_adj_matrix);
+    }
+
+    Graph Graph::operator*(const int scalar) const
+    {
+        // Checking base cases before performing the operation for optimization.
+        if (scalar == 0)
+        {
+            std::vector<std::vector<int>> new_adj_matrix(this->graph.size(), std::vector<int>(this->graph.size(), 0));
+            return Graph(new_adj_matrix);
+        }
+        if (scalar == 1)
+        {
+            return *this;
+        }
+
+        std::vector<std::vector<int>> new_adj_matrix;
+        for (size_t i = 0; i < this->graph.size(); i++)
+        {
+            std::vector<int> row;
+            for (size_t j = 0; j < this->graph.at(i).size(); j++)
+            {
+                row.push_back(this->graph.at(i).at(j) * scalar);
+            }
+            new_adj_matrix.push_back(row);
+            row.clear();
+        }
+        return Graph(new_adj_matrix);
+    }
+
+    Graph Graph::operator/(const int scalar) const
+    {
+        // Checking base cases before performing the operation for optimization.
+        if (scalar == 0)
+        {
+            throw invalid_argument("Cannot divide by zero.");
+        }
+        if (scalar == 1)
+        {
+            return *this;
+        }
+
+        std::vector<std::vector<int>> new_adj_matrix;
+        for (size_t i = 0; i < this->graph.size(); i++)
+        {
+            std::vector<int> row;
+            for (size_t j = 0; j < this->graph.at(i).size(); j++)
+            {
+                row.push_back(this->graph.at(i).at(j) / scalar);
+            }
+            new_adj_matrix.push_back(row);
+            row.clear();
+        }
+        return Graph(new_adj_matrix);
+    }
+
+    Graph Graph::operator*(const Graph &other) const
+    {
+        if (this->graph.size() != other.graph.size() || this->graph.at(0).size() != other.graph.at(0).size())
+        {
+            throw invalid_argument("The graphs must have the same size.");
+        }
+
+        size_t graph_size = this->graph.size(); // For optimization - so that we don't have to call this->graph.size() multiple times.
+
+        // Initialize the new graph adjecency matrix with zeros.
+        std::vector<std::vector<int>> new_adj_matrix(graph_size, std::vector<int>(graph_size, 0));
+
+        for (size_t i = 0; i < graph_size; i++)
+        {
+            for (size_t j = 0; j < graph_size; j++)
+            {
+                for (size_t k = 0; k < graph_size; k++)
+                {
+                    if (i == j)
+                        continue;
+                    new_adj_matrix[i][j] += this->graph.at(i).at(k) * other.graph.at(k).at(j);
+                }
             }
         }
+        return Graph(new_adj_matrix);
     }
-    return *this;
-}
 
-/*
- * Postfix decrement operator.
- */
-Graph &Graph::operator--(int)
-{
-    Graph temp(*this);
-    --(*this);
-    return temp;
-}
-
-Graph &Graph::operator+=(const Graph &other)
-{
-    if (this->graph.size() != other.graph.size())
+    /**
+     * Arithmetic Operator + Assignment operators:
+     */
+    Graph &Graph::operator+=(const Graph &other)
     {
-        throw invalid_argument("The graphs must have the same size.");
-    }
-    for (size_t i = 0; i < this->graph.size(); i++)
-    {
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        if (this->graph.size() != other.graph.size())
         {
-            this->graph.at(i).at(j) += other.graph.at(i).at(j);
+            throw invalid_argument("The graphs must have the same size.");
         }
+        *this = *this + other;
+        return *this;
+        // if (this->graph.size() != other.graph.size())
+        // {
+        //     throw invalid_argument("The graphs must have the same size.");
+        // }
+        // for (size_t i = 0; i < this->graph.size(); i++)
+        // {
+        //     for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        //     {
+        //         this->graph.at(i).at(j) += other.graph.at(i).at(j);
+        //     }
+        // }
+        // return *this;
     }
-    return *this;
-}
 
-Graph &Graph::operator-=(const Graph &other)
-{
-    if (this->graph.size() != other.graph.size())
+    Graph &Graph::operator-=(const Graph &other)
     {
-        throw invalid_argument("The graphs must have the same size.");
-    }
-    for (size_t i = 0; i < this->graph.size(); i++)
-    {
-        for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        if (this->graph.size() != other.graph.size())
         {
-            this->graph.at(i).at(j) += other.graph.at(i).at(j);
+            throw invalid_argument("The graphs must have the same size.");
         }
+        *this = *this - other;
+        return *this;
+        // if (this->graph.size() != other.graph.size())
+        // {
+        //     throw invalid_argument("The graphs must have the same size.");
+        // }
+        // for (size_t i = 0; i < this->graph.size(); i++)
+        // {
+        //     for (size_t j = 0; j < this->graph.at(i).size(); j++)
+        //     {
+        //         this->graph.at(i).at(j) += other.graph.at(i).at(j);
+        //     }
+        // }
+        // return *this;
     }
-    return *this;
-}
 
-    ostream &Graph::operator<<(ostream &os)
+    Graph &Graph::operator*=(const Graph &other)
     {
-        for (size_t i = 0; i < this->size(); i++)
+        if (this->graph.size() != other.graph.size())
         {
-            for (size_t j = 0; j < this->size(); j++)
+            throw invalid_argument("The graphs must have the same size.");
+        }
+        *this = *this * other;
+        return *this;
+    }
+
+    Graph &Graph::operator*=(const int scalar)
+    {
+        *this = *this * scalar;
+        return *this;
+    }
+
+    Graph &Graph::operator/=(const int scalar)
+    {
+        *this = *this / scalar;
+        return *this;
+    }
+
+    /**
+     * @brief This function checks if g1 is a subgraph of g2.
+     * @source: https://www.quora.com/Which-is-the-fastest-way-to-check-if-a-matrix-A-contains-a-matrix-B
+     * @return true if g1 is a subgraph of g2, otherwise false.
+     */
+    bool GridSearch(const Graph &g1, const Graph &g2)
+    {
+        for (size_t i = 0; i <= g2.size() - g1.size(); ++i)
+        {
+            for (size_t j = 0; j <= g2.size() - g1.size(); ++j)
             {
-                os << this->get_edge(i, j) << "\t";
+                // Check if the submatrix starting at (i, j) matches g1.
+                bool isMatch = true;
+                for (size_t x = 0; x < g1.size(); ++x)
+                {
+                    for (size_t y = 0; y < g1.size(); ++y)
+                    {
+                        if (g2.at(i + x).at(j + y) != g1.at(x).at(y))
+                        {
+                            isMatch = false;
+                            break;
+                        }
+                    }
+                    if (!isMatch)
+                        break;
+                }
+                if (isMatch)
+                    return true;
             }
-            os << endl;
         }
+
+        // If we reached here, g1 is not a subgraph of g2.
+        return false;
+    }
+
+    /**
+     * Relational Operators:
+     */
+
+    /**
+     * @brief: This function compares two graphs in java like style.
+     * @return: 0 if the graphs are equal, 1 if g1 > g2, -1 if g1 < g2.
+     */
+    int compare(const Graph &g1, const Graph &g2)
+    {
+        bool are_equal = g1.isContainsNegativeEdge() == g2.isContainsNegativeEdge() &&
+                         g1.NumOfVertices() == g2.NumOfVertices();
+
+        // Check if the weight of each edge is the same.
+        for (size_t i = 0; i < g1.size(); i++)
+        {
+            for (size_t j = 0; j < g1.size(); j++)
+            {
+                if (g1.at(i).at(j) != g2.at(i).at(j))
+                {
+                    return are_equal = false;
+                }
+            }
+        }
+
+        if (are_equal)
+            return 0;
+        if (g1.size() > g2.size() && GridSearch(g2, g1))
+            return 1;
+        if (g1.size() < g2.size() && GridSearch(g1, g2))
+            return -1;
+        if (g1.NumOfEdges() > g2.NumOfEdges())
+            return 1;
+        if (g1.NumOfEdges() < g2.NumOfEdges())
+            return -1;
+        if (g1.NumOfVertices() > g2.NumOfVertices())
+            return 1;
+        if (g1.NumOfVertices() < g2.NumOfVertices())
+            return -1;
+        return 0;
+    }
+
+    bool Graph::operator>(const Graph &other) const
+    {
+        return compare(*this, other) == 1;
+    }
+
+    bool Graph::operator<(const Graph &other) const
+    {
+        return compare(*this, other) == -1;
+    }
+
+    bool Graph::operator>=(const Graph &other) const
+    {
+        return compare(*this, other) >= 0;
+    }
+
+    bool Graph::operator<=(const Graph &other) const
+    {
+        return compare(*this, other) <= 0;
+    }
+
+    std::ostream &operator<<(std::ostream &os, const Graph &g)
+    {
+        for (size_t i = 0; i < g.size(); i++)
+        {
+            for (size_t j = 0; j < g.size(); j++)
+            {
+                os << g.get_edge(i, j) << "\t";
+            }
+            os << std::endl;
+        }
+        os << std::endl;
+
         return os;
     }
-
+} // namespace ariel
