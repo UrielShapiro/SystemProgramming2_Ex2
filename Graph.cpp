@@ -188,18 +188,6 @@ namespace ariel
 
     Graph Graph::operator-() const
     {
-        // std::vector<std::vector<int>> newGraph;
-        // for (size_t i = 0; i < this->graph.size(); i++)
-        // {
-        //     std::vector<int> row;
-        //     for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        //     {
-        //         row.push_back(-(this->graph.at(i).at(j)));
-        //     }
-        //     newGraph.push_back(row);
-        //     row.clear();
-        // }
-        // return Graph(newGraph);
         return *this * (-1);
     }
     // Prefix increment operator.
@@ -384,18 +372,6 @@ namespace ariel
         }
         *this = *this + other;
         return *this;
-        // if (this->graph.size() != other.graph.size())
-        // {
-        //     throw invalid_argument("The graphs must have the same size.");
-        // }
-        // for (size_t i = 0; i < this->graph.size(); i++)
-        // {
-        //     for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        //     {
-        //         this->graph.at(i).at(j) += other.graph.at(i).at(j);
-        //     }
-        // }
-        // return *this;
     }
 
     Graph &Graph::operator-=(const Graph &other)
@@ -406,18 +382,6 @@ namespace ariel
         }
         *this = *this - other;
         return *this;
-        // if (this->graph.size() != other.graph.size())
-        // {
-        //     throw invalid_argument("The graphs must have the same size.");
-        // }
-        // for (size_t i = 0; i < this->graph.size(); i++)
-        // {
-        //     for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        //     {
-        //         this->graph.at(i).at(j) += other.graph.at(i).at(j);
-        //     }
-        // }
-        // return *this;
     }
 
     Graph &Graph::operator*=(const Graph &other)
