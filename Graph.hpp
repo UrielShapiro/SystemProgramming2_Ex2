@@ -37,7 +37,7 @@ namespace ariel
          * The function counts the number of edges in the graph.
          * The function prints the number of vertices and edges in the graph.
          */
-        void printGraph();
+        std::string printGraph();
         inline size_t size() const
         {
             return this->graph.size();
