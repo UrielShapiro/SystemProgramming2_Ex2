@@ -1,10 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept> // invalid_argument
+#include <sstream>   // ostringstream
+#include <string>    // string
 
 #include "Graph.hpp"
 using namespace ariel;
-
 namespace ariel
 {
     size_t NumOfVertices(const Graph &g)
@@ -89,22 +90,38 @@ namespace ariel
         }
     }
 
-    void ariel::Graph::printGraph()
+    std::string ariel::Graph::printGraph()
     {
+        stringstream graph_str;
         int edges = 0;
         for (size_t i = 0; i < this->graph.size(); i++)
         {
+            graph_str << "[";
             for (size_t j = 0; j < this->graph.size(); j++)
             {
-                cout << this->graph.at(i).at(j) << "\t";
+                if (j == this->graph.size() - 1)
+                {
+                    graph_str << to_string(this->graph.at(i).at(j));
+                }
+                else
+                {
+                    graph_str << to_string(this->graph.at(i).at(j)) << ", ";
+                }
                 if (this->graph.at(i).at(j) != 0)
                 {
                     edges++;
                 }
             }
-            cout << endl;
+            if (i == this->graph.size() - 1)
+            {
+                graph_str << "]";
+            }
+            else
+            {
+                graph_str << "]\n";
+            }
         }
-        cout << "Graph with " << this->graph.size() << " vertices and " << edges << " edges." << endl;
+        return graph_str.str();
     }
 
     ///////////////////////////////////////////////////////////OPERATOR OVERLOADING/////////////////////////////////////////////////////
@@ -112,11 +129,6 @@ namespace ariel
     Graph &Graph::operator=(const Graph &other)
     {
         this->loadGraph(other.graph);
-        // if (this == &other)
-        // {
-        //     return *this;
-        // }
-        // *this = Graph(other);
         return *this;
     }
 
