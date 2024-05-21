@@ -18,7 +18,7 @@ namespace ariel
         return this->graph.at(i);
     }
 
-    ariel::Graph::Graph() : _edges(0), isDirected(false), containsNegativeEdge(false), graph(std::vector<std::vector<int>>()) {}
+    ariel::Graph::Graph() : _edges(0), isDirected(false), containsNegativeEdge(false) {}
 
     ariel::Graph::Graph(const std::vector<std::vector<int>> g) : isDirected(false), containsNegativeEdge(false), _edges(0)
     {
@@ -27,7 +27,7 @@ namespace ariel
 
     ariel::Graph::Graph(const Graph &other) : isDirected(other.isDirected), containsNegativeEdge(other.containsNegativeEdge), _edges(0)
     {
-        Graph(other.graph);
+        loadGraph(other.graph);
     }
 
     Graph ariel::Graph::MakeUndirectedGraph(Graph g)
@@ -53,7 +53,7 @@ namespace ariel
 
     void ariel::Graph::loadGraph(const std::vector<std::vector<int>> g)
     {
-        if (g.size() == 0)
+        if (g.empty())
         {
             throw invalid_argument("Invalid graph: The graph is empty.");
         }
@@ -137,17 +137,24 @@ namespace ariel
      */
     bool Graph::operator==(const Graph &other) const
     {
-        bool condition1 = this->containsNegativeEdge == other.containsNegativeEdge ||
-                          this->NumOfVertices() == other.NumOfVertices();
+        bool condition1 = this->NumOfVertices() == other.NumOfVertices();
 
         // Check if the weight of each edge is the same.
-        for (size_t i = 0; i < this->graph.size(); i++)
+        if (condition1)
         {
-            for (size_t j = 0; j < this->graph.at(i).size(); j++)
+            for (size_t i = 0; i < this->graph.size(); i++)
             {
-                if (this->graph.at(i).at(j) != other.graph.at(i).at(j))
+                for (size_t j = 0; j < this->graph.at(i).size(); j++)
                 {
-                    return condition1 = false;
+                    if (this->graph.at(i).at(j) != other.graph.at(i).at(j))
+                    {
+                        condition1 = false;
+                        break;
+                    }
+                }
+                if (!condition1)
+                {
+                    break;
                 }
             }
         }
@@ -159,21 +166,6 @@ namespace ariel
 
     bool Graph::operator!=(const Graph &other) const
     {
-        // if (this->isDirected != other.isDirected || this->containsNegativeEdge != other.containsNegativeEdge || this->graph.size() != other.graph.size())
-        // {
-        //     return true;
-        // }
-
-        // for (size_t i = 0; i < this->graph.size(); i++)
-        // {
-        //     for (size_t j = 0; j < this->graph.at(i).size(); j++)
-        //     {
-        //         if (this->graph.at(i).at(j) != other.graph.at(i).at(j))
-        //         {
-        //             return true;
-        //         }
-        //     }
-        // }
         return !(*this == other);
     }
 
@@ -353,7 +345,9 @@ namespace ariel
                 for (size_t k = 0; k < graph_size; k++)
                 {
                     if (i == j)
+                    {
                         continue;
+                    }
                     new_adj_matrix[i][j] += this->graph.at(i).at(k) * other.graph.at(k).at(j);
                 }
             }
@@ -413,6 +407,11 @@ namespace ariel
      */
     bool GridSearch(const Graph &g1, const Graph &g2)
     {
+        if (g1.size() > g2.size())
+        {
+            return false;
+        }
+
         for (size_t i = 0; i <= g2.size() - g1.size(); ++i)
         {
             for (size_t j = 0; j <= g2.size() - g1.size(); ++j)
@@ -430,10 +429,14 @@ namespace ariel
                         }
                     }
                     if (!isMatch)
+                    {
                         break;
+                    }
                 }
                 if (isMatch)
+                {
                     return true;
+                }
             }
         }
 
@@ -454,32 +457,49 @@ namespace ariel
         bool are_equal = g1.isContainsNegativeEdge() == g2.isContainsNegativeEdge() &&
                          g1.NumOfVertices() == g2.NumOfVertices();
 
-        // Check if the weight of each edge is the same.
-        for (size_t i = 0; i < g1.size(); i++)
+        if (are_equal)
         {
-            for (size_t j = 0; j < g1.size(); j++)
+            // Check if the weight of each edge is the same.
+            for (size_t i = 0; i < g1.size(); i++)
             {
-                if (g1.at(i).at(j) != g2.at(i).at(j))
+                for (size_t j = 0; j < g1.size(); j++)
                 {
-                    return are_equal = false;
+                    if (g1.at(i).at(j) != g2.at(i).at(j))
+                    {
+                        are_equal = false;
+                    }
                 }
             }
         }
 
         if (are_equal)
+        {
             return 0;
-        if (g1.size() > g2.size() && GridSearch(g2, g1))
+        }
+        if (g1.NumOfVertices() > g2.NumOfVertices() && GridSearch(g2, g1))
+        {
             return 1;
-        if (g1.size() < g2.size() && GridSearch(g1, g2))
+        }
+        if (g1.NumOfVertices() < g2.NumOfVertices() && GridSearch(g1, g2))
+        {
             return -1;
+        }
         if (g1.NumOfEdges() > g2.NumOfEdges())
+        {
             return 1;
+        }
         if (g1.NumOfEdges() < g2.NumOfEdges())
+        {
             return -1;
+        }
         if (g1.NumOfVertices() > g2.NumOfVertices())
+        {
             return 1;
+        }
         if (g1.NumOfVertices() < g2.NumOfVertices())
+        {
             return -1;
+        }
         return 0;
     }
 
@@ -511,9 +531,9 @@ namespace ariel
             {
                 os << g.get_edge(i, j) << "\t";
             }
-            os << std::endl;
+            os << '\n';
         }
-        os << std::endl;
+        os << '\n';
 
         return os;
     }

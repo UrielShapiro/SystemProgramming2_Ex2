@@ -30,7 +30,7 @@ namespace ariel
          * The function checks if the matrix contains negative edges.
          * The function checks if the distance from a vertex to itself isn't 0.
          */
-        void loadGraph(std::vector<std::vector<int>> graph);
+        void loadGraph(std::vector<std::vector<int>> g);
 
         /*
          * The function prints the graph as a matrix.
