@@ -137,6 +137,12 @@ namespace ariel
      */
     bool Graph::operator==(const Graph &other) const
     {
+        if(this->graph.empty() && other.graph.empty())
+        {
+            return true;
+        }
+
+        // Check if the number of vertices is the same.
         bool condition1 = this->NumOfVertices() == other.NumOfVertices();
 
         // Check if the weight of each edge is the same.

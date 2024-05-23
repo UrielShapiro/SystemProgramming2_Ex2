@@ -262,6 +262,9 @@ TEST_CASE("Testing -=")
     CHECK(g2.printGraph() == "[0, 0, 1]\n[1, 0, 2]\n[1, 1, 0]");
     CHECK(g4.printGraph() == "[0, -1, -1]\n[-1, 0, -2]\n[-1, -2, 0]");
 
+    ariel::Graph g5;
+    CHECK_THROWS(g5 -= g3);
+
     srand(time(NULL));
     for (size_t i = 0; i < NUM_OF_TESTS; i++)
     {
@@ -309,6 +312,9 @@ TEST_CASE("Test * scalar")
     CHECK(g5.printGraph() == "[0, 0, 0]\n[0, 0, 0]\n[0, 0, 0]");
 
     ariel::Graph g6 = g2 * 5 * 10;
+    CHECK(g6.printGraph() == "[0, 50, 50]\n[50, 0, 100]\n[50, 100, 0]");
+
+    g6 = g6 * 1;
     CHECK(g6.printGraph() == "[0, 50, 50]\n[50, 0, 100]\n[50, 100, 0]");
 
     srand(time(NULL));
@@ -413,6 +419,9 @@ TEST_CASE("Test / scalar")
         {18, 28, 0}};
     g2.loadGraph(weightedGraph);
     ariel::Graph g4 = g2 / -2;
+    CHECK(g4.printGraph() == "[0, -5, -6]\n[-7, 0, -11]\n[-9, -14, 0]");
+
+    g4 = g4 / 1;
     CHECK(g4.printGraph() == "[0, -5, -6]\n[-7, 0, -11]\n[-9, -14, 0]");
 
     ariel::Graph g5;
@@ -791,6 +800,10 @@ TEST_CASE("Test ==")
         {1, 0, 0, 1, 0}};
     g4.loadGraph(graph3);
     CHECK_FALSE(g4 == g1);
+
+    ariel::Graph g5;
+    ariel::Graph g6;
+    CHECK(g5 == g6);
 }
 
 TEST_CASE("Test >")
@@ -834,6 +847,9 @@ TEST_CASE("Test >")
 
     ariel::Graph g5;
     CHECK_FALSE(g5 > g4);
+
+    ariel::Graph g6;
+    CHECK_FALSE(g5 > g6);
 }
 
 TEST_CASE("Test <")
@@ -877,7 +893,101 @@ TEST_CASE("Test <")
 
     ariel::Graph g5;
     CHECK_FALSE(g4 < g5);
+    
+    ariel::Graph g6;
+    CHECK_FALSE(g5 < g6);
+}
 
+TEST_CASE("Test >=")
+{
+    ariel::Graph g1;
+    vector<vector<int>> graph = {
+        {0, 1, 0},
+        {1, 0, 1},
+        {0, 1, 0}};
+    g1.loadGraph(graph);
+
+    ariel::Graph g2;
+    vector<vector<int>> weightedGraph = {
+        {0, 1, 1},
+        {1, 0, 2},
+        {1, 2, 0}};
+    g2.loadGraph(weightedGraph);
+    
+    // Graph with more edges
+    CHECK(g2 >= g1);
+
+    ariel::Graph g3;
+    vector<vector<int>> graph2 = {
+        {0, 1, 0},
+        {1, 0, 1},
+        {0, 1, 0}};
+    g3.loadGraph(graph2);
+    CHECK(g1 >= g3);
+
+    ariel::Graph g4;
+    vector<vector<int>> graph3 = {
+        {0, 1, 0, 0, 1},
+        {1, 0, 1, 0, 0},
+        {0, 1, 0, 1, 0},
+        {0, 0, 1, 0, 1},
+        {1, 0, 0, 1, 0}};
+    g4.loadGraph(graph3);
+    CHECK(g4 >= g1);
+
+    CHECK(g4 >= g2 + g1);
+
+    ariel::Graph g5;
+    CHECK_FALSE(g5 >= g4);
+
+    ariel::Graph g6;
+    CHECK(g5 >= g6);
+}
+
+TEST_CASE("Test <=")
+{
+    ariel::Graph g1;
+    vector<vector<int>> graph = {
+        {0, 1, 0},
+        {1, 0, 1},
+        {0, 1, 0}};
+    g1.loadGraph(graph);
+
+    ariel::Graph g2;
+    vector<vector<int>> weightedGraph = {
+        {0, 1, 1},
+        {1, 0, 2},
+        {1, 2, 0}};
+    g2.loadGraph(weightedGraph);
+    
+    // Graph with less edges
+    CHECK(g1 <= g2);
+
+    ariel::Graph g3;
+    vector<vector<int>> graph2 = {
+        {0, 1, 0},
+        {1, 0, 1},
+        {0, 1, 0}};
+    g3.loadGraph(graph2);
+    CHECK(g3 <= g1);
+
+    ariel::Graph g4;
+    vector<vector<int>> graph3 = {
+        {0, 1, 0, 0, 1},
+        {1, 0, 1, 0, 0},
+        {0, 1, 0, 1, 0},
+        {0, 0, 1, 0, 1},
+        {1, 0, 0, 1, 0}};
+    g4.loadGraph(graph3);
+    CHECK(g1 <= g4);
+
+    CHECK(g2 + g1 <= g4);
+
+    ariel::Graph g5;
+    CHECK_FALSE(g4 <= g5);
+
+    ariel::Graph g6;
+    CHECK(g5 <= g6);
 }
 
 TEST_CASE("Invalid operations")
