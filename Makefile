@@ -5,6 +5,9 @@ CXXFLAGS=-std=c++11 -Werror -Wsign-conversion
 VALGRIND_FLAGS=-v --leak-check=full --show-leak-kinds=all  --error-exitcode=99
 
 SOURCES=Graph.cpp Algorithms.cpp
+TEST_SOURCES = TestCounter.cpp Test.cpp $(SOURCES)
+
+TEST_OBJECTS=$(subst .cpp,.o,$(TEST_SOURCES))
 OBJECTS=$(subst .cpp,.o,$(SOURCES))
 
 run: demo
@@ -13,11 +16,12 @@ run: demo
 demo: Demo.o $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $^ -o demo
 
-test: TestCounter.o Test.o $(OBJECTS)
+test: $(TEST_OBJECTS)
 	$(CXX) $(CXXFLAGS) $^ -o test
+	-./test
 
 tidy:
-	clang-tidy $(SOURCES) -checks=bugprone-*,clang-analyzer-*,cppcoreguidelines-*,performance-*,portability-*,readability-*,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory --warnings-as-errors=-* --
+	clang-tidy Graph.cpp -checks=bugprone-*,clang-analyzer-*,cppcoreguidelines-*,performance-*,portability-*,readability-*,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory --warnings-as-errors=-* --
 
 valgrind: demo test
 	valgrind --tool=memcheck $(VALGRIND_FLAGS) ./demo 2>&1 | { egrep "lost| at " || true; }
@@ -28,3 +32,5 @@ valgrind: demo test
 
 clean:
 	rm -f *.o demo test
+
+.PHONY: run tidy valgrind clean
