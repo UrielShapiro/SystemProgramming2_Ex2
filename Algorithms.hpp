@@ -2,9 +2,7 @@
  * Last digits of ID: 9745
  * Email address: uriel1999@gmail.com
 */
-
-#ifndef ALGORITHMS_HPP
-#define ALGORITHMS_HPP
+#pragma once
 
 #include <string>
 #include "Graph.hpp"
@@ -30,7 +28,7 @@ namespace ariel
         static void dijkstra(Graph g, size_t src, size_t end, std::vector<int> &dist, std::vector<size_t> &parents);
         static bool relax(Graph g, size_t v, size_t u, std::vector<int> &distance, std::vector<size_t> &parents);
         static bool BellmanFord(Graph g, size_t src, std::vector<int> &dist, std::vector<size_t> &parents, std::vector<size_t> &cycleNodes);
-        static void DFS(Graph g, size_t current, size_t parent, std::vector<bool> &visited, std::vector<bool> &inStack);
+        static void DFS(Graph g, size_t current, size_t parent, std::vector<bool> &visited);
         static bool BFSColoring(Graph g, size_t start, std::vector<Color> &colors);
         static size_t DFSCycleCheck(Graph g, size_t current, size_t parent, std::vector<Visited> &visited,
                                     std::vector<size_t> &parents, std::vector<size_t> &cycleNodes);
@@ -44,4 +42,3 @@ namespace ariel
         static std::string negativeCycle(Graph g);
     };
 };
-#endif

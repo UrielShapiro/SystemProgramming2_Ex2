@@ -15,6 +15,11 @@ OBJECTS=$(subst .cpp,.o,$(SOURCES))
 
 all: demo test
 
+debug:
+	$(CXX) $(CXXFLAGS) --compile Algorithms.cpp -o Algorithms.o -DDEBUG
+	make test
+	-./test			# ignore code 1 that test returns
+
 run: demo
 	./$^
 
@@ -39,4 +44,4 @@ valgrind: demo test
 clean:
 	rm -f *.o demo test
 
-.PHONY: run tidy valgrind clean all
+.PHONY: run tidy valgrind clean all debug

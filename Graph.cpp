@@ -1,7 +1,7 @@
 /**
  * Last digits of ID: 9745
  * Email address: uriel1999@gmail.com
-*/
+ */
 
 #include <iostream>
 #include <vector>
@@ -23,7 +23,38 @@ namespace ariel
         return this->graph.at(i);
     }
 
-    ariel::Graph::Graph() : _edges(0), isDirected(false), containsNegativeEdge(false) {}
+    const size_t ariel::Graph::size() const
+    {
+        return this->graph.size();
+    }
+
+    const int ariel::Graph::get_edge(const size_t i, const size_t j) const
+    {
+        return this->graph.at(i).at(j);
+    }
+
+    const size_t ariel::Graph::NumOfVertices() const
+    {
+        return size();
+    }
+
+    const size_t ariel::Graph::NumOfEdges() const
+    {
+        return this->isDirected ? this->_edges : this->_edges / 2; // If the graph is undirected, we will divide the number of edges by 2.
+    }
+
+    const bool ariel::Graph::isDirectedGraph() const
+    {
+        return this->isDirected;
+    }
+
+            const bool ariel::Graph::isContainsNegativeEdge() const
+            {
+                return this->containsNegativeEdge;
+            }
+
+
+    ariel::Graph::Graph() : _edges(0), isDirected(false), containsNegativeEdge(false), graph{} {}
 
     ariel::Graph::Graph(const std::vector<std::vector<int>> g) : isDirected(false), containsNegativeEdge(false), _edges(0)
     {
@@ -142,7 +173,7 @@ namespace ariel
      */
     bool Graph::operator==(const Graph &other) const
     {
-        if(this->graph.empty() && other.graph.empty())
+        if (this->graph.empty() && other.graph.empty())
         {
             return true;
         }
@@ -339,9 +370,9 @@ namespace ariel
 
     Graph Graph::operator*(const Graph &other) const
     {
-        if (this->graph.size() != other.graph.size() || this->graph.at(0).size() != other.graph.at(0).size())
+        if (this->graph.size() != other.graph.size())
         {
-            throw invalid_argument("The number of columns in the first matrix must be equal to the number of rows in the second matrix.");
+            throw invalid_argument("The adjecency matrices are not of the same order");
         }
 
         size_t graph_size = this->graph.size(); // For optimization - so that we don't have to call this->graph.size() multiple times.

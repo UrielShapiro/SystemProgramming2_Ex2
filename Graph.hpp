@@ -1,7 +1,7 @@
 /**
  * Last digits of ID: 9745
  * Email address: uriel1999@gmail.com
-*/
+ */
 
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
@@ -43,32 +43,13 @@ namespace ariel
          * The function prints the number of vertices and edges in the graph.
          */
         std::string printGraph();
-        inline size_t size() const
-        {
-            return this->graph.size();
-        }
-
-        inline int get_edge(const size_t i, const size_t j) const
-        {
-            return this->graph.at(i).at(j);
-        }
+        const size_t size() const;
+        const int get_edge(const size_t i, const size_t j) const;
         vector<int> at(const size_t i) const;
-        inline size_t NumOfVertices() const // This function was made only for readability.
-        {
-            return size();
-        }
-        inline size_t NumOfEdges() const
-        {
-            return this->isDirected ? this->_edges : this->_edges / 2; // If the graph is undirected, we will divide the number of edges by 2.
-        }
-        inline bool isDirectedGraph() const
-        {
-            return this->isDirected;
-        }
-        inline bool isContainsNegativeEdge() const
-        {
-            return this->containsNegativeEdge;
-        }
+        const size_t NumOfVertices() const; // This function was made only for readability.
+        const size_t NumOfEdges() const;
+        const bool isDirectedGraph() const;
+        const bool isContainsNegativeEdge() const;
 
         /*
          * This function creates an undirected graph from a directed graph.
